@@ -31,12 +31,6 @@ work/
 ├── bruce-devkitv1-port/        # Pre-built combined 0x0 factory firmware binary
 │   └── Bruce-esp32-devkitv1.bin
 ├── webui_files/                # Cached monochrome WebUI assets
-├── bruce-windows.bat           # Root Windows launcher
-├── flash-windows.bat           # Root Windows flasher
-├── bruce-linux.sh              # Root Linux launcher
-├── flash-linux.sh              # Root Linux flasher
-├── bruce-mac.sh                # Root macOS launcher
-├── flash-mac.sh                # Root macOS flasher
 └── bruce_cable_ui.py           # Cross-platform WebUI cable transport server
 ```
 
@@ -83,38 +77,38 @@ Connect your ESP32 DevKit V1 using a micro-USB **data** cable.
 
 ### 3. Launch for Your Operating System
 
-#### Windows
+#### Windows (`windows/` folder)
 ```cmd
-1. Double-click  flash-windows.bat      (write firmware to board - once)
-2. Double-click  bruce-windows.bat      (launch WebUI and open browser)
+1. Open the  windows  folder
+2. Double-click  flash-windows.bat      (writes firmware to board - run once)
+3. Double-click  bruce-windows.bat      (launches WebUI and opens browser)
 ```
-*(Or use `windows\flash-windows.bat` and `windows\bruce-windows.bat`)*
 
-#### Linux
+#### Linux (`linux/` folder)
 ```bash
-1. chmod +x flash-linux.sh bruce-linux.sh
-2. ./flash-linux.sh                     (write firmware to board - once)
-3. ./bruce-linux.sh                     (launch WebUI and open browser)
+1. cd linux
+2. chmod +x flash-linux.sh bruce-linux.sh
+3. ./flash-linux.sh                     (writes firmware to board - run once)
+4. ./bruce-linux.sh                     (launches WebUI and opens browser)
 ```
-*(Or use `./linux/flash-linux.sh` and `./linux/bruce-linux.sh`)*
 
 > [!NOTE]
 > If you encounter a serial permission error on Linux, add your user to the `dialout` group:
 > `sudo usermod -a -G dialout $USER` (or `sudo usermod -a -G uucp $USER` on Arch), then log out and back in.
 
-#### macOS
+#### macOS (`macos/` folder)
 ```bash
-1. chmod +x flash-mac.sh bruce-mac.sh
-2. ./flash-mac.sh                       (write firmware to board - once)
-3. ./bruce-mac.sh                       (launch WebUI and open browser)
+1. cd macos
+2. chmod +x flash-mac.sh bruce-mac.sh
+3. ./flash-mac.sh                       (writes firmware to board - run once)
+4. ./bruce-mac.sh                       (launches WebUI and opens browser)
 ```
-*(Or use `./macos/flash-mac.sh` and `./macos/bruce-mac.sh`)*
 
 ---
 
 ## Using the Interface
 
-Once `bruce.bat` or `bruce.sh` runs, it hosts the local interface at `http://127.0.0.1:8080/` and opens your browser.
+Once the WebUI script (`bruce-windows.bat`, `bruce-linux.sh`, or `bruce-mac.sh`) runs, it hosts the local interface at `http://127.0.0.1:8080/` and opens your browser.
 
 | Tab | What it does |
 |---|---|
