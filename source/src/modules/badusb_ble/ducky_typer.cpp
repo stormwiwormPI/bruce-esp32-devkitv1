@@ -1002,7 +1002,8 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
     if (returnToMenu) return;
 
     if (ble) {
-        displayTextLine("Waiting Victim");
+        String devName = bruceConfigPins.bleName.isEmpty() ? "keyboard_99" : bruceConfigPins.bleName;
+        displayTextLine("Pair: " + devName);
         while (!hid->isConnected() && !check(EscPress)) { vTaskDelay(pdMS_TO_TICKS(1)); }
         if (hid->isConnected()) {
             BLEConnected = true;
@@ -1075,6 +1076,12 @@ void ducky_keyboard(HIDInterface *&hid, bool ble) {
         String menuTitle = ble ? "BLE Keyboard" : "USB Keyboard";
 
         while (!exitKeyboard) {
+            if (ble && (!hid || !hid->isConnected())) {
+                displayWarning("Disconnected", true);
+                delay(600);
+                exitKeyboard = true;
+                break;
+            }
             options = {
                 {"Keyboard",      [&]() { keyboardSectionAction(hid, queueRecording, queuedKeys); }},
                 {"Modifiers",
@@ -1180,12 +1187,13 @@ EXIT:
 // MEDIA COMMANDS - BLE Media Controller
 // ============================================================================
 
-void MediaCommands(HIDInterface *hid, bool ble) {
+void MediaCommands(HIDInterface *&hid, bool ble) {
     // Double cleanup before starting
     safeCleanupDuckyBLE(hid);
     ducky_startKb(hid, true, 1); // functionId 1 = Media
 
-    displayTextLine("Pairing...");
+    String devName = bruceConfigPins.bleName.isEmpty() ? "keyboard_99" : bruceConfigPins.bleName;
+    displayTextLine("Pair: " + devName);
 
     while (hid && !hid->isConnected() && !check(EscPress) && !check(PrevPress)) { delay(50); };
 
@@ -1216,7 +1224,15 @@ void MediaCommands(HIDInterface *hid, bool ble) {
         addOptionToMainMenu();
         index = loopOptions(options, index);
         SelPress = false;
-        if (!returnToMenu && index >= 0) goto reMenu;
+        if (!returnToMenu && index >= 0) {
+            if (hid && !hid->isConnected()) {
+                displayWarning("Disconnected", true);
+                delay(600);
+                returnToMenu = true;
+            } else {
+                goto reMenu;
+            }
+        }
     }
 
     safeCleanupDuckyBLE(hid);
@@ -1390,7 +1406,8 @@ void PresenterMode(HIDInterface *&hid, bool ble) {
     if (ble) safeCleanupDuckyBLE(hid);
     ducky_startKb(hid, ble, 3); // functionId 3 = Presenter
 
-    displayTextLine("Pairing...");
+    String devName = bruceConfigPins.bleName.isEmpty() ? "keyboard_99" : bruceConfigPins.bleName;
+    displayTextLine("Pair: " + devName);
 
     while (!hid->isConnected() && !check(EscPress)) { vTaskDelay(pdMS_TO_TICKS(1)); }
 

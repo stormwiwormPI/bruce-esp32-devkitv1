@@ -175,7 +175,8 @@ void BleKeyboard::begin(const uint8_t *layout, uint16_t showAs) {
     hid->setPnp(0x02, vid, pid, version);
     hid->setHidInfo(0x00, 0x01);
 
-    BLEDevice::setSecurityAuth(true, true, true);
+    BLEDevice::setSecurityAuth(true, false, true);
+    BLEDevice::setSecurityIOCap(BLE_HS_IO_NO_INPUT_OUTPUT);
 
     hid->setReportMap((uint8_t *)_hidReportDescriptor, sizeof(_hidReportDescriptor));
     hid->startServices();
@@ -210,9 +211,12 @@ void BleKeyboard::end(void) {
 
     BLEDevice::deinit(true);
     this->connected = false;
+    this->m_subCount = 0;
 }
 
-bool BleKeyboard::isConnected(void) { return this->connected; }
+bool BleKeyboard::isConnected(void) {
+    return this->connected && (this->m_subCount > 0);
+}
 
 void BleKeyboard::setBatteryLevel(uint8_t level) {
     this->batteryLevel = level;
@@ -417,19 +421,22 @@ size_t BleKeyboard::write(const uint8_t *buffer, size_t size) {
 }
 void BleKeyboard::ServerCallbacks::onConnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo) {
     parent->connected = true;
-    Serial.println("BRUCE KEYBOARD: lib connected");
+    parent->m_subCount = 0;
+    Serial.println("BRUCE KEYBOARD: Physical link connected; awaiting HID report subscription...");
 }
 void BleKeyboard::ServerCallbacks::onDisconnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo, int reason) {
     parent->connected = false;
+    parent->m_subCount = 0;
     Serial.println("BRUCE KEYBOARD: lib disconnected");
 }
 void BleKeyboard::ServerCallbacks::onAuthenticationComplete(NimBLEConnInfo &connInfo) {
     if (connInfo.isEncrypted()) {
-        Serial.println("BRUCE KEYBOARD: Paired successfully.");
+        Serial.println("BRUCE KEYBOARD: Paired & encrypted successfully.");
         parent->connected = true;
     } else {
-        Serial.println("BRUCE KEYBOARD: Pairing failed");
+        Serial.println("BRUCE KEYBOARD: Pairing / encryption failed");
         parent->connected = false;
+        parent->m_subCount = 0;
     }
 }
 
@@ -448,7 +455,8 @@ void BleKeyboard::CharacteristicCallbacks::onSubscribe(
         if (parent->m_subCount) parent->m_subCount--;
     } else {
         parent->m_subCount++;
-        Serial.println("BRUCE KEYBOARD: Client subscribed to notifications.");
+        parent->connected = true;
+        Serial.printf("BRUCE KEYBOARD: Client subscribed to HID notifications (subCount=%d).\n", parent->m_subCount);
     }
 }
 

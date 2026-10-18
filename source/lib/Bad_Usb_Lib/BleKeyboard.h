@@ -73,7 +73,9 @@ public:
     size_t write(const MediaKeyReport c);
     size_t write(const uint8_t *buffer, size_t size) override;
     void releaseAll(void) override;
-    bool isConnected(void);
+    bool isConnected(void) override;
+    bool isPhysicalConnected(void) { return this->connected; }
+    uint8_t getSubscribedCount() { return m_subCount; }
     void setBatteryLevel(uint8_t level);
     void setName(const String &deviceName);
     void setDelay(uint32_t ms);
@@ -110,7 +112,6 @@ protected:
             NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo, uint16_t subValue
         ) override;
     };
-    uint8_t getSubscribedCount() { return m_subCount; }
 
 private:
     uint8_t m_subCount{0};
