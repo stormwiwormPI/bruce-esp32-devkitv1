@@ -1,0 +1,9 @@
+/* Bruce reads this file as its user theme.
+   Monochrome: black background, white text, greys in between.
+   One rule is needed because index.css hard-codes an orange warning. */
+:root{--color:#ffffff;--sec-color:#c8c8c8;--background:#000000;--light-color:#1c1c1c;}
+.dialog.navigator .navigator-warning{background-color:#1c1c1c;border-color:#ffffff;color:#ffffff;}
+#navigator-screen{image-rendering:pixelated;background:#000000;border:1px solid #ffffff;cursor:pointer;}
+.dialog.navigator.is-fullscreen,.dialog.navigator:fullscreen{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;max-width:100vw!important;max-height:100vh!important;margin:0!important;border:none!important;border-radius:0!important;background:#000000!important;z-index:9999!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;box-sizing:border-box!important;}
+.dialog.navigator.is-fullscreen .dialog-body,.dialog.navigator:fullscreen .dialog-body{flex:1 1 auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:14px!important;overflow:auto!important;max-height:none!important;}
+.dialog.navigator.is-fullscreen #navigator-screen,.dialog.navigator:fullscreen #navigator-screen{width:min(92vw,calc((100vh - 230px) * 1.3333))!important;height:auto!important;aspect-ratio:4 / 3;}

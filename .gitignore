@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Build output
+*.log
+logs/
+
+# PlatformIO (only if someone builds in place)
+.pio/
+.pioenv/
+.pioarduino/
+source/.pio/
+source/**/.pio/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# NOTE: bruce-devkitv1-port/ and webui_files/ are intentionally committed.
+#   - the .bin is the firmware other users flash
+#   - webui_files/ is Bruce's interface, needed to run offline
