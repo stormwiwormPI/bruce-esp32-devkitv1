@@ -823,7 +823,12 @@ def main() -> None:
             say("  Permission denied accessing serial port.", "y")
             say("  Run this command to add yourself to dialout group, then log out & in:", "y")
             say("    sudo usermod -a -G dialout $USER", "b")
-        say("Close the console app and Arduino IDE's serial monitor first.", "d")
+        else:
+            say("  If the board is not detected or missing USB drivers:", "y")
+            say("    CP210x: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers", "b")
+            say("    CH340:  https://www.wch-ic.com/downloads/CH341SER_EXE.html", "b")
+            say("  Make sure your micro-USB cable is a data cable (not charge-only).", "d")
+        say("Close any serial monitor (Arduino IDE, PuTTY, screen) first.", "d")
         sys.exit(1)
 
     say("resetting the board...", "d")

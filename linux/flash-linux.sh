@@ -73,8 +73,11 @@ if [ -z "$PORT" ] || [ "$PORT" = "NONE" ] || [ ! -e "$PORT" ]; then
     echo "  [X] ESP32 board not detected."
     echo ""
     echo "      1. Connect the board via a micro-USB DATA cable (not charge-only)."
-    echo "      2. Check if the device shows up in: dmesg | tail"
-    echo "      3. Run this script again."
+    echo "      2. Check if the device shows up in kernel logs: dmesg | tail"
+    echo "         (Standard Linux kernels include cp210x and ch341 modules by default)."
+    echo "      3. If your user lacks serial permission, add to dialout:"
+    echo "           sudo usermod -a -G dialout \$USER"
+    echo "      4. Run this script again."
     echo ""
     read -p "Press Enter to exit..."
     exit 1

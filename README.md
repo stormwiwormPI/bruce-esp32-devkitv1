@@ -54,16 +54,43 @@ The board definition defines **no** display pins (`TFT_CS`, `TFT_DC`, `TFT_RST`,
 
 ## Quick Start
 
+### 1. Get the Repository
+
+Clone this project to your PC (or click **Fork** at the top right of this GitHub page and clone your personal fork):
+
+```bash
+# Clone directly:
+git clone https://github.com/stormwiwormPI/bruce-esp32-devkitv1.git
+cd bruce-esp32-devkitv1
+
+# Or clone your personal fork to work from there:
+git clone https://github.com/<your-username>/bruce-esp32-devkitv1.git
+cd bruce-esp32-devkitv1
+```
+
+### 2. Connect Your Board
+
 Connect your ESP32 DevKit V1 using a micro-USB **data** cable.
 
-### Windows
+> [!TIP]
+> **Board Not Recognized or Missing Serial Port?**
+> If your PC or the script does not detect the board (e.g. Device Manager shows an unknown device or yellow exclamation mark, or the flash script reports `ESP32 board not detected`), you need the USB-to-UART bridge driver for your board:
+> - **CP2102 / CP2104 Driver (Silicon Labs)**: [Download from Silicon Labs](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)
+> - **CH340 / CH341 Driver (WCH)**: [Download for Windows (EXE)](https://www.wch-ic.com/downloads/CH341SER_EXE.html) | [Download for macOS](https://github.com/adrianmihalko/ch340g-ch34g-ch34x-mac-os-x-driver) | [SparkFun CH340 Guide](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all)
+> - **FTDI VCP Driver**: [Download from FTDI](https://ftdichip.com/drivers/vcp-drivers/)
+>
+> *Note: Make sure your cable is a true **data transfer cable**, not a charge-only power cable.*
+
+### 3. Launch for Your Operating System
+
+#### Windows
 ```cmd
 1. Double-click  flash-windows.bat      (write firmware to board - once)
 2. Double-click  bruce-windows.bat      (launch WebUI and open browser)
 ```
 *(Or use `windows\flash-windows.bat` and `windows\bruce-windows.bat`)*
 
-### Linux
+#### Linux
 ```bash
 1. chmod +x flash-linux.sh bruce-linux.sh
 2. ./flash-linux.sh                     (write firmware to board - once)
@@ -75,7 +102,7 @@ Connect your ESP32 DevKit V1 using a micro-USB **data** cable.
 > If you encounter a serial permission error on Linux, add your user to the `dialout` group:
 > `sudo usermod -a -G dialout $USER` (or `sudo usermod -a -G uucp $USER` on Arch), then log out and back in.
 
-### macOS
+#### macOS
 ```bash
 1. chmod +x flash-mac.sh bruce-mac.sh
 2. ./flash-mac.sh                       (write firmware to board - once)
@@ -134,6 +161,13 @@ If you want to modify the firmware or build it from scratch:
 
 ## Troubleshooting
 
-- **Board not found**: Ensure your micro-USB cable is a **data** cable. On Linux/macOS, check `dmesg` or `ls /dev/ttyUSB* /dev/cu.usb*`.
+- **Board not found / Unknown USB device**:
+  - Ensure your micro-USB cable supports **data transfer** (many cheap phone cables only carry power).
+  - Install the USB-to-UART driver for your board's chip:
+    - **CP2102 / CP2104**: [Silicon Labs CP210x Driver](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers)
+    - **CH340 / CH341**: [WCH Driver (Windows)](https://www.wch-ic.com/downloads/CH341SER_EXE.html) | [macOS Driver Guide](https://github.com/adrianmihalko/ch340g-ch34g-ch34x-mac-os-x-driver) | [SparkFun Driver Guide](https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all)
+    - **FTDI**: [FTDI VCP Drivers](https://ftdichip.com/drivers/vcp-drivers/)
+  - On Linux, check `dmesg | tail` or `ls /dev/ttyUSB* /dev/ttyACM*`.
+  - On macOS, check `ls /dev/cu.usbserial*`.
 - **Serial port busy**: Close any serial monitor (Arduino IDE, PuTTY, screen) before running `bruce` or `flash`.
 - **Flashing bootloader timeout**: If the board doesn't auto-reset into download mode during flashing, hold down the **BOOT** button on the board, tap **RESET**, release **BOOT**, and run the flash script again.
