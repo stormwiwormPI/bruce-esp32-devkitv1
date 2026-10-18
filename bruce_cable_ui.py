@@ -159,9 +159,9 @@ class SerialBoard:
                     frame = self._poll_screen_once()
                     if frame and frame[0] == 0xAA and len(frame) > 10:
                         self.latest_frame = frame
-                    time.sleep(0.01)
+                    time.sleep(0.005)
                 else:
-                    time.sleep(0.03)
+                    time.sleep(0.02)
             except Exception:
                 time.sleep(0.1)
 
@@ -386,7 +386,7 @@ class SerialBoard:
         return "\n".join(out)
 
     def getscreen(self) -> bytes:
-        """Return the latest cached binary TFT frame immediately for 20Hz polling."""
+        """Return the latest cached binary TFT frame immediately for 60Hz polling."""
         self._last_getscreen_ts = time.time()
         return self.latest_frame
 

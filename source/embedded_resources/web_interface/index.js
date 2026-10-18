@@ -901,9 +901,11 @@ function drawCanvasLoading() {
   ctx.restore();
 }
 
-let oldTimerSession = sessionStorage.getItem("autoReload") || "0";
-eConfigAutoReload.querySelector(`option[value="${oldTimerSession}"]`).selected =
-  true;
+let oldTimerSession = sessionStorage.getItem("autoReload") || "16";
+if (oldTimerSession === "0" || oldTimerSession === "50") oldTimerSession = "16";
+let optEl = eConfigAutoReload.querySelector(`option[value="${oldTimerSession}"]`);
+if (optEl) optEl.selected = true;
+else eConfigAutoReload.value = "16";
 eConfigAutoReload.addEventListener("change", async (e) => {
   e.preventDefault();
   autoReloadScreen();
