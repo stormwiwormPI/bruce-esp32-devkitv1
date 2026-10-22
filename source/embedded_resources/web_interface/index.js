@@ -536,8 +536,7 @@ async function reloadScreen() {
     let screenData = new Uint8Array(arrayBuffer);
     await renderTFT(screenData);
   } catch (error) {
-    console.error("Failed to reload screen:", error);
-    alert("Failed to reload screen: " + error.message);
+    console.warn("Failed to reload screen:", error);
   } finally {
     btnForceReload.classList.remove("reloading");
     SCREEN_RELOAD = false;
@@ -1722,4 +1721,22 @@ window.addEventListener("popstate", (event) => {
       }
     }, 100); // Small delay to ensure the file list is loaded first
   }
+  // Auto-open Navigator if nav parameter is present, or on mobile device / captive portal
+  const rawParams = new URLSearchParams(window.location.search);
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const shouldOpenNav =
+    rawParams.get("nav") === "1" ||
+    window.location.hash === "#navigator" ||
+    window.location.hash === "#nav" ||
+    (isMobile && rawParams.get("nav") !== "0");
+  if (shouldOpenNav) {
+    setTimeout(async () => {
+      try {
+        await openNavigator();
+      } catch (e) {
+        console.error("Failed to auto-open navigator:", e);
+      }
+    }, 150);
+  }
+
 })();

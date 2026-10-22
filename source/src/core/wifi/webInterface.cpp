@@ -10,6 +10,7 @@
 #include "core/wifi/wifi_common.h" // using common wifisetup
 #include "esp_task_wdt.h"
 #include "webFiles.h"
+#include <DNSServer.h>
 #include <MD5Builder.h>
 #include <cstddef>
 #include <esp32-hal-psram.h>
@@ -29,6 +30,58 @@ const char *host = "bruce";
 String uploadFolder = "";
 static bool mdnsRunning = false;
 
+// Captive Portal DNS Server
+static DNSServer *webDnsServer = nullptr;
+static TaskHandle_t webDnsTaskHandle = NULL;
+static volatile bool webDnsRunning = false;
+
+static void webDnsTask(void *param) {
+    while (webDnsRunning) {
+        if (webDnsServer) {
+            webDnsServer->processNextRequest();
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    webDnsTaskHandle = NULL;
+    vTaskDelete(NULL);
+}
+
+void startWebDnsServer() {
+    if (webDnsRunning && webDnsServer) return;
+    if (!webDnsServer) {
+        webDnsServer = new DNSServer();
+    }
+    webDnsRunning = true;
+    webDnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+    webDnsServer->start(53, "*", WiFi.softAPIP());
+    if (!webDnsTaskHandle) {
+        xTaskCreate(
+            webDnsTask,
+            "WebDnsTask",
+            2560,
+            NULL,
+            1,
+            &webDnsTaskHandle
+        );
+    }
+    Serial.printf("[WebUI] Captive Portal DNS started on port 53 -> %s\n", WiFi.softAPIP().toString().c_str());
+}
+
+void stopWebDnsServer() {
+    if (!webDnsRunning && !webDnsServer) return;
+    webDnsRunning = false;
+    int waitLimit = 20;
+    while (webDnsTaskHandle != NULL && waitLimit-- > 0) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    if (webDnsServer) {
+        webDnsServer->stop();
+        delete webDnsServer;
+        webDnsServer = nullptr;
+    }
+    Serial.println("[WebUI] Captive Portal DNS stopped");
+}
+
 // Generate random token
 String generateToken(int length = 24) {
     String token = "";
@@ -42,6 +95,7 @@ String generateToken(int length = 24) {
 **  Turn off the WebUI
 **********************************************************************/
 void stopWebUi() {
+    stopWebDnsServer();
     tft.setLogging(false);
     isWebUIActive = false;
     server->end();
@@ -181,6 +235,11 @@ bool checkUserWebAuth(AsyncWebServerRequest *request, bool onFailureReturnLoginP
             if (bruceConfig.isValidWebUISession(token)) { return true; }
         }
     }
+    // In SoftAP mode, grant direct access so captive portal and mobile control
+    // work seamlessly without requiring manual HTTP credentials
+    if (WiFi.getMode() & WIFI_MODE_AP) {
+        return true;
+    }
     if (onFailureReturnLoginPage) {
         serveWebUIFile(request, "login.html", "text/html", true, login_html, login_html_size);
     } else {
@@ -266,7 +325,23 @@ void handleUpload(
     }
 }
 
-void notFound(AsyncWebServerRequest *request) { request->send(404, "text/plain", "Nothing in here Sharky"); }
+void notFound(AsyncWebServerRequest *request) {
+    // Captive portal detection: if request Host is not device IP / hostname, redirect
+    String host = request->host();
+    String apIP = WiFi.softAPIP().toString();
+    if ((WiFi.getMode() & WIFI_MODE_AP) &&
+        host != apIP && host != "bruce" && host != "bruce.local" &&
+        host != "127.0.0.1" && host != "localhost") {
+        AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+        response->addHeader("Location", "http://" + apIP + "/?nav=1");
+        response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response->addHeader("Pragma", "no-cache");
+        response->addHeader("Expires", "-1");
+        request->send(response);
+        return;
+    }
+    request->send(404, "text/plain", "Nothing in here Sharky");
+}
 
 /**********************************************************************
 **  Function: drawWebUiScreen
@@ -397,6 +472,27 @@ void configureWebServer() {
     mdnsRunning = startMdnsResponder();
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     server->onNotFound(notFound);
+
+    // Captive Portal Detection Endpoints (Android, iOS, Windows, Firefox)
+    auto captiveRedirect = [](AsyncWebServerRequest *request) {
+        String apIP = WiFi.softAPIP().toString();
+        AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+        response->addHeader("Location", "http://" + apIP + "/?nav=1");
+        response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response->addHeader("Pragma", "no-cache");
+        response->addHeader("Expires", "-1");
+        request->send(response);
+    };
+
+    server->on("/generate_204", HTTP_GET, captiveRedirect);
+    server->on("/gen_204", HTTP_GET, captiveRedirect);
+    server->on("/hotspot-detect.html", HTTP_GET, captiveRedirect);
+    server->on("/library/test/success.html", HTTP_GET, captiveRedirect);
+    server->on("/connecttest.txt", HTTP_GET, captiveRedirect);
+    server->on("/ncsi.txt", HTTP_GET, captiveRedirect);
+    server->on("/canonical.html", HTTP_GET, captiveRedirect);
+    server->on("/success.txt", HTTP_GET, captiveRedirect);
+    server->on("/redirect", HTTP_GET, captiveRedirect);
 
     // Index
     server->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -769,6 +865,9 @@ void startWebUi(bool mode_ap) {
         configureWebServer();
 
         isWebUIActive = true;
+    }
+    if (mode_ap || (WiFi.getMode() & WIFI_MODE_AP)) {
+        startWebDnsServer();
     }
     tft.setLogging();
 #if defined(VIRTUAL_DISPLAY)

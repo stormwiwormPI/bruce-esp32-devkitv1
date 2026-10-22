@@ -25,3 +25,5 @@ void configureWebServer();
 void startWebUi(bool mode_ap = false);
 void stopWebUi();
 void cleanlyStopWebUiForWiFiFeature();
+void startWebDnsServer();
+void stopWebDnsServer();

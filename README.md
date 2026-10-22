@@ -1,8 +1,10 @@
 # Bruce on a bare ESP32 DevKit V1
 
-Runs [Bruce](https://github.com/BruceDevices/firmware) on a cheap ESP32 DevKit V1 (ESP32-D0WD-V3, WROOM-32, 4 MB flash, no PSRAM, **no physical display**) and shows its full graphical interface on your PC over the USB cable on **Windows**, **Linux**, and **macOS**.
+Runs [Bruce](https://github.com/BruceDevices/firmware) on a cheap ESP32 DevKit V1 (ESP32-D0WD-V3, WROOM-32, 4 MB flash, no PSRAM, **no physical display**).
 
-Upstream ships no build for this board. This project provides a custom board model, full virtual display firmware, host transport, and automated scripts for Windows, Linux, and macOS.
+Supports **two concurrent control modes**:
+1. **Standalone Wireless (Mobile / Phone)**: Powered from any USB charger, power bank, or laptop. Automatically broadcasts a Wi-Fi Access Point (`BruceNet`) with a **Captive Portal** that pops open the WebUI & virtual **Navigator** directly on your phone's browser.
+2. **USB Cable (PC)**: Plugged into a PC over USB, the graphical interface streams live over the USB cable on **Windows**, **Linux**, and **macOS** with zero drivers or router needed.
 
 ---
 
@@ -10,6 +12,7 @@ Upstream ships no build for this board. This project provides a custom board mod
 
 ```
 work/
+├── bruce.bat                   # 1-click launcher for Windows (root convenience)
 ├── windows/                    # Windows scripts
 │   ├── bruce-windows.bat       # Launch WebUI server and open browser
 │   └── flash-windows.bat       # Flash precompiled firmware to COM port
@@ -33,6 +36,28 @@ work/
 ├── webui_files/                # Cached monochrome WebUI assets
 └── bruce_cable_ui.py           # Cross-platform WebUI cable transport server
 ```
+
+---
+
+## Mode 1: Wireless Smartphone Captive Portal (No PC Needed)
+
+Once the firmware is flashed, you do not even need a computer to use Bruce:
+
+1. **Power Up**: Plug the ESP32 DevKit V1 into any power bank, phone charger, or USB port.
+2. **Connect Phone**: On your smartphone or tablet, connect to the Wi-Fi network:
+   - **SSID**: `BruceNet`
+   - **Password**: `brucenet`
+3. **Automatic Portal**: Your phone's OS (Android or iOS) will automatically display a **"Sign in to network"** notification.
+4. **Instant Control**: Tap the notification (or open `http://172.0.0.1/` in any browser). The WebUI loads and the **Navigator** automatically pops open with the real-time virtual display canvas and touch D-pad buttons!
+
+---
+
+## Mode 2: USB Cable Interface (PC)
+
+When plugged into a computer via USB data cable:
+- Run `bruce.bat` (or `windows/bruce-windows.bat` on Windows, `./linux/bruce-linux.sh` on Linux, `./macos/bruce-mac.sh` on macOS).
+- The host transport bridges serial frames to `http://127.0.0.1:8080/` where you can control Bruce using keyboard arrow keys, Enter, Backspace, or the on-screen D-pad.
+- **Both modes can operate concurrently without conflict.**
 
 ---
 

@@ -591,6 +591,20 @@ void setup() {
     //  start a task to handle serial commands while the webui is running
     startSerialCommandsHandlerTask(true);
 
+#if defined(VIRTUAL_DISPLAY)
+    // Headless virtual display board: automatically create Wi-Fi AP and host WebUI with captive portal
+    Serial.println("");
+    Serial.println("==================================================");
+    Serial.println("  Bruce DevKit V1: Starting Auto-AP and Captive Portal WebUI");
+    Serial.println("==================================================");
+    startWebUi(true);
+    Serial.print("  SSID:     "); Serial.println(bruceConfig.wifiAp.ssid);
+    Serial.print("  Password: "); Serial.println(bruceConfig.wifiAp.pwd);
+    Serial.print("  Portal:   http://"); Serial.print(WiFi.softAPIP().toString()); Serial.println("/");
+    Serial.println("==================================================");
+    Serial.println("");
+#endif
+
     wakeUpScreen();
     if (bruceConfig.startupApp != "" && !startupApp.startApp(bruceConfig.startupApp)) {
         bruceConfig.setStartupApp("");

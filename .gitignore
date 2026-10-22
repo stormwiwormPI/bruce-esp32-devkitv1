@@ -25,3 +25,5 @@ Thumbs.db
 # NOTE: bruce-devkitv1-port/ and webui_files/ are intentionally committed.
 #   - the .bin is the firmware other users flash
 #   - webui_files/ is Bruce's interface, needed to run offline
+
+brucewebflasher/
